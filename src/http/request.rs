@@ -4,17 +4,17 @@ use std::error::Error;
 use std::fmt::{Result as FmtResult, Display, Formatter, Debug};
 use std::str;
 use std::str::Utf8Error;
-pub struct  Request {
-    path: String, 
-    query_string: Option<String>, // Option means it can be null or have a value of type(value<T>)
+pub struct  Request<'buff> {
+    path: &'buff str, 
+    query_string: Option<&'buff str>, // Option means it can be null or have a value of type(value<T>)
     method: Method
 }
 
 
 
-impl TryFrom<&[u8]> for Request {
+impl<'buff> TryFrom<&'buff [u8]> for Request<'buff> {
     type Error = ParseError ;
-    fn try_from(buf: &[u8]) -> Result<Self, Self::Error> {
+    fn try_from(buf: &'buff [u8]) -> Result<Request<'buff>, Self::Error> {
         let request = str::from_utf8(buf)?;
 
         let (method, request) = get_next_word(request).ok_or(ParseError::InvalidRequest)?;
@@ -29,12 +29,12 @@ impl TryFrom<&[u8]> for Request {
         let mut query_string = None;
 
         if let Some(i) = path.find("?"){
-            query_string = Some(path[i + 1..].to_string());
+            query_string = Some(&path[i + 1..]);
            path =  &path[..i];
             
         }
     Ok(Self {
-        path:path.to_string(),
+        path:path,
         query_string,
         method
      })  
