@@ -1,7 +1,6 @@
 use std::{net::TcpListener, io::Read};
 use crate::http::Request;
 use std::convert::TryFrom;
-use std::convert::TryInto;
 pub struct Server {
     addr: String,
 }
@@ -15,7 +14,7 @@ pub struct Server {
     pub fn run(self) {
         println!("Listining on {}", self.addr);
         let listener = TcpListener::bind(&self.addr).unwrap();
-        'server_run_loop: loop {
+         loop {
 
             match listener.accept(){
                 Ok((mut stream, _)) => {

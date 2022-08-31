@@ -4,9 +4,11 @@ use std::error::Error;
 use std::fmt::{Result as FmtResult, Display, Formatter, Debug};
 use std::str;
 use std::str::Utf8Error;
+use super::{QueryString};
+
 pub struct  Request<'buff> {
     path: &'buff str, 
-    query_string: Option<&'buff str>, // Option means it can be null or have a value of type(value<T>)
+    query_string: Option<QueryString<'buff>>, // Option means it can be null or have a value of type(value<T>)
     method: Method
 }
 
@@ -29,7 +31,7 @@ impl<'buff> TryFrom<&'buff [u8]> for Request<'buff> {
         let mut query_string = None;
 
         if let Some(i) = path.find("?"){
-            query_string = Some(&path[i + 1..]);
+            query_string = Some(QueryString::from(&path[i + 1..]));
            path =  &path[..i];
             
         }
@@ -41,7 +43,6 @@ impl<'buff> TryFrom<&'buff [u8]> for Request<'buff> {
     }
 }
 fn get_next_word(request: &str) -> Option<(&str,&str)> {
-    let mut iter = request.chars();
     for (index, c ) in request.chars().enumerate(){
         if c == ' ' ||c ==  '\r' {
             return Some((&request[..index], &request[index+1..]));
@@ -70,12 +71,12 @@ impl From<MethodError> for ParseError {
 }
 
 impl Display for ParseError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> FmtResult {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "{}", self.message())
     }
 }
 impl Debug for ParseError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> FmtResult {
+    fn fmt(&self, f: &mut Formatter<'_>) -> FmtResult {
         write!(f, "{}", self.message())
     }
 }
